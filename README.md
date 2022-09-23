@@ -1,1 +1,1 @@
-# face-ar-flutter-plugin
+# Face AR Integration into Flutter project
