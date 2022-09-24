@@ -1,8 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.banuba.far.flutter.sample.face_ar_flutter_sample">
+
+    <uses-permission android:name="android.permission.CAMERA"/>
+
    <application
         android:label="face_ar_flutter_sample"
-        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
