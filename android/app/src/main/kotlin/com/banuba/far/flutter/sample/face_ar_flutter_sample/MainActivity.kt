@@ -1,15 +1,16 @@
 package com.banuba.far.flutter.sample.face_ar_flutter_sample
 
+import android.content.Context
 import androidx.annotation.NonNull
 import com.banuba.sdk.manager.BanubaSdkManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.StandardMessageCodec
+import io.flutter.plugin.platform.PlatformView
+import io.flutter.plugin.platform.PlatformViewFactory
 
 class MainActivity : FlutterActivity() {
-    companion object {
-        const val TAG = "SampleAndroid"
-    }
-
     private val banubaSdkManager by lazy(LazyThreadSafetyMode.NONE) {
         // Init Face AR BanubaSdkManager and create new instance.
         // Your app should use only one instance of BanubaSdkManager and deinitialize it
@@ -36,6 +37,18 @@ class MainActivity : FlutterActivity() {
                 )
             )
     }
+}
+
+private class BanubaPlatformCameraViewFactory(
+    private val messenger: BinaryMessenger,
+    private val banubaSdkManager: BanubaSdkManager
+) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
+
+    override fun create(
+        context: Context,
+        id: Int,
+        o: Any?
+    ): PlatformView = BanubaPlatformCameraView(context, messenger, banubaSdkManager, id)
 }
 
 

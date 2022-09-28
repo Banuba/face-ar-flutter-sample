@@ -23,7 +23,6 @@ class BanubaCameraView extends StatefulWidget {
 class _BanubaCameraViewState extends State<BanubaCameraView> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
-    print('BanubaCameraView. build');
     if (Platform.isAndroid) {
       return AndroidView(
         viewType: BanubaCameraView.viewType,
