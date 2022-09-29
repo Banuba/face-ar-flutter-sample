@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class SampleStateModel extends ChangeNotifier {
-
   static const _effects = ["Cats", "DebugWireframe", "PineappleGlasses", "TrollGrandma"];
   int _lastEffectPosition = 0;
   bool _lastFacingFront = true;
@@ -24,33 +21,30 @@ class SampleStateModel extends ChangeNotifier {
   }
 
   bool toggleFacing() {
-    _lastFacingFront = ! _lastFacingFront;
+    _lastFacingFront = !_lastFacingFront;
     return _lastFacingFront;
   }
 
   Future<void> requestCameraPermission() async {
-    if (Platform.isAndroid) {
-      var permissionStatus = await Permission.camera.status;
+    var permissionStatus = await Permission.camera.status;
 
-      if (permissionStatus.isGranted) {
-        status = Status.ready;
-        notifyListeners();
-        return;
-      }
-
-      status = Status.requestPermissions;
+    if (permissionStatus.isGranted) {
+      status = Status.ready;
       notifyListeners();
-
-      permissionStatus = await Permission.camera.request();
-
-      if (permissionStatus.isGranted) {
-        status = Status.ready;
-      } else {
-        status = Status.initial;
-      }
-
-      notifyListeners();
+      return;
     }
+
+    status = Status.requestPermissions;
+    notifyListeners();
+
+    permissionStatus = await Permission.camera.request();
+    if (permissionStatus.isGranted) {
+      status = Status.ready;
+    } else {
+      status = Status.initial;
+    }
+
+    notifyListeners();
   }
 }
 
