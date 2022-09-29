@@ -29,6 +29,12 @@ class _BanubaCameraViewState extends State<BanubaCameraView> with WidgetsBinding
         onPlatformViewCreated: _onPlatformViewCreated,
       );
     }
+    if (Platform.isIOS) {
+      return UiKitView(
+        viewType: BanubaCameraView.viewType,
+        onPlatformViewCreated: _onPlatformViewCreated,
+      );
+    }
     return const Text('Running platform is not yet supported by the text_view plugin');
   }
 
@@ -36,4 +42,3 @@ class _BanubaCameraViewState extends State<BanubaCameraView> with WidgetsBinding
     widget.onControllerCreated(BanubaSdkController(viewId));
   }
 }
-

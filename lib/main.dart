@@ -38,15 +38,11 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   BanubaSdkController? _controller;
 
   Future<void> applyEffect(SampleStateModel model) async {
-    if (Platform.isAndroid) {
-      _controller?.applyEffect(model.toggleEffect());
-    }
+    _controller?.applyEffect(model.toggleEffect());
   }
 
   void applyFacing(SampleStateModel model) {
-    if (Platform.isAndroid) {
-      _controller?.setFrontFacing(model.toggleFacing());
-    }
+    _controller?.setFrontFacing(model.toggleFacing());
   }
 
   @override
