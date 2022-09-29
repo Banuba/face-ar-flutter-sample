@@ -22,10 +22,13 @@ let banubaClientToken = /*@START_MENU_TOKEN@*/"SET FACE AR TOKEN"/*@END_MENU_TOK
     weak var registrar = self.registrar(forPlugin: "FaceAR-plugin")
 
     let viewType = "banuba.facear.flutter/camera_view"
-    let factory = FaceARViewFactory(
+      
+    let factory = BanubaPlatformCameraViewFactory(
       messenger: registrar!.messenger(),
-      viewType: viewType
+      viewType: viewType,
+      sdkManager: BanubaSdkManager()
     )
+      
     self.registrar(forPlugin: "FaceAR-view-plugin")!.register(
         factory,
         withId: viewType
