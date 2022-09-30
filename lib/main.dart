@@ -13,6 +13,7 @@ void main() {
 
 class SampleApp extends StatelessWidget {
   const SampleApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -68,8 +69,14 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                 case Status.requestPermissions:
                   return _buildRequestPermissionsState();
 
-                case Status.ready:
-                  return _buildCameraState(model);
+                case Status.choiceList:
+                  return _buildChoiceListState(model);
+
+                case Status.choiceFullscreen:
+                  return _buildChoiceFullscreenState(model);
+
+                case Status.choiceCustom:
+                  return _buildChoiceCustomState(model);
               }
             }),
           ),
@@ -121,7 +128,42 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildCameraState(SampleStateModel model) {
+  Widget _buildChoiceListState(SampleStateModel model) => Center(
+        child: Column(
+          children: [
+            MaterialButton(
+              color: Colors.blue,
+              textColor: Colors.white,
+              disabledTextColor: Colors.black,
+              padding: const EdgeInsets.all(12.0),
+              splashColor: Colors.blueAccent,
+              onPressed: () => model.requestChoiceFullscreen(),
+              child: const Text(
+                'Start Fullscreen',
+                style: TextStyle(
+                  fontSize: 17.0,
+                ),
+              ),
+            ),
+            MaterialButton(
+              color: Colors.blue,
+              textColor: Colors.white,
+              disabledTextColor: Colors.black,
+              padding: const EdgeInsets.all(12.0),
+              splashColor: Colors.blueAccent,
+              onPressed: () => model.requestChoiceCustom(),
+              child: const Text(
+                'Start Custom',
+                style: TextStyle(
+                  fontSize: 17.0,
+                ),
+              ),
+            )
+          ],
+        ),
+      );
+
+  Widget _buildChoiceFullscreenState(SampleStateModel model) {
     final screenSize = MediaQuery.of(context).size;
 
     return Stack(
@@ -134,6 +176,61 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               onControllerCreated: _handleCameraViewCreated,
               key: const Key("BanubaCameraView"),
             )),
+        Positioned(
+            top: screenSize.height * 0.6,
+            left: 24,
+            child: Column(
+              children: [
+                MaterialButton(
+                  color: Colors.blue,
+                  textColor: Colors.white,
+                  disabledTextColor: Colors.black,
+                  padding: const EdgeInsets.all(8.0),
+                  splashColor: Colors.blueAccent,
+                  onPressed: () => applyEffect(model),
+                  child: const Text(
+                    "Toggle Effect",
+                    style: TextStyle(
+                      fontSize: 14.0,
+                    ),
+                  ),
+                ),
+                MaterialButton(
+                  color: Colors.blue,
+                  textColor: Colors.white,
+                  disabledTextColor: Colors.black,
+                  padding: const EdgeInsets.all(8.0),
+                  splashColor: Colors.blueAccent,
+                  onPressed: () => applyFacing(model),
+                  child: const Text(
+                    "Toggle Facing",
+                    style: TextStyle(
+                      fontSize: 14.0,
+                    ),
+                  ),
+                )
+              ],
+            ))
+      ],
+    );
+  }
+
+  Widget _buildChoiceCustomState(SampleStateModel model) {
+    final screenSize = MediaQuery.of(context).size;
+
+    return Stack(
+      children: [
+        Positioned(
+            top: screenSize.height * 0.1,
+            right: 24,
+            child: Container(
+                width: screenSize.width / 3,
+                height: screenSize.height / 3,
+                // !!! Avoid excessive rerender cycles
+                child: BanubaCameraView(
+                  onControllerCreated: _handleCameraViewCreated,
+                  key: const Key("BanubaCameraView"),
+                ))),
         Positioned(
             top: screenSize.height * 0.6,
             left: 24,

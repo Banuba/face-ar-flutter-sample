@@ -29,7 +29,7 @@ class SampleStateModel extends ChangeNotifier {
     var permissionStatus = await Permission.camera.status;
 
     if (permissionStatus.isGranted) {
-      status = Status.ready;
+      status = Status.choiceList;
       notifyListeners();
       return;
     }
@@ -39,11 +39,21 @@ class SampleStateModel extends ChangeNotifier {
 
     permissionStatus = await Permission.camera.request();
     if (permissionStatus.isGranted) {
-      status = Status.ready;
+      status = Status.choiceList;
     } else {
       status = Status.initial;
     }
 
+    notifyListeners();
+  }
+
+  void requestChoiceFullscreen() {
+    status = Status.choiceFullscreen;
+    notifyListeners();
+  }
+
+  void requestChoiceCustom() {
+    status = Status.choiceCustom;
     notifyListeners();
   }
 }
@@ -51,5 +61,7 @@ class SampleStateModel extends ChangeNotifier {
 enum Status {
   initial,
   requestPermissions,
-  ready,
+  choiceList,
+  choiceFullscreen,
+  choiceCustom
 }
