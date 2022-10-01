@@ -31,11 +31,14 @@ class BanubaPlatformCameraView internal constructor(
         methodChannel = MethodChannel(messenger, "${VIEW_TYPE}_$viewId").apply {
             setMethodCallHandler(this@BanubaPlatformCameraView)
         }
+
+        banubaSdkManager.attachSurface(surfaceView)
     }
 
     override fun getView(): View = surfaceView
 
     override fun dispose() {
+        banubaSdkManager.releaseSurface()
     }
 
     override fun onMethodCall(
@@ -68,9 +71,8 @@ class BanubaPlatformCameraView internal constructor(
         methodCall: MethodCall,
         result: MethodChannel.Result
     ) {
-        banubaSdkManager.attachSurface(surfaceView)
-        banubaSdkManager.openCamera()
         banubaSdkManager.effectPlayer.playbackPlay()
+        banubaSdkManager.openCamera()
         result.success(null)
     }
 
@@ -79,7 +81,6 @@ class BanubaPlatformCameraView internal constructor(
         result: MethodChannel.Result
     ) {
         banubaSdkManager.effectPlayer.playbackPause()
-        banubaSdkManager.releaseSurface()
         banubaSdkManager.closeCamera()
 
         result.success(null)
