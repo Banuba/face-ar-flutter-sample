@@ -23,4 +23,17 @@ class BanubaSdkController {
   Future<void> setFrontFacing(bool front) async {
     return _channel.invokeMethod('setFrontFacing', front);
   }
+
+  Future<void> startVideoRecording(String filePath, bool recordAudio) async {
+    final params = <String, dynamic>{
+      'filePath': filePath,
+      'recordAudio': recordAudio
+    };
+
+    return _channel.invokeMethod('startVideoRecording', params);
+  }
+
+  Future<void> stopVideoRecording() async {
+    return _channel.invokeMethod('stopVideoRecording');
+  }
 }

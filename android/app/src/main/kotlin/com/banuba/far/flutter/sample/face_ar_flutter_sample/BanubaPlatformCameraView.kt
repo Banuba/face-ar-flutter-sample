@@ -5,6 +5,7 @@ import android.net.Uri
 import android.view.SurfaceView
 import android.view.View
 import com.banuba.sdk.camera.Facing
+import com.banuba.sdk.entity.ContentRatioParams
 import com.banuba.sdk.manager.BanubaSdkManager
 import io.flutter.embedding.android.FlutterSurfaceView
 import io.flutter.plugin.common.BinaryMessenger
@@ -21,6 +22,9 @@ class BanubaPlatformCameraView internal constructor(
 
     companion object {
         const val VIEW_TYPE = "banuba.facear.flutter/camera_view"
+
+        private const val DEFAULT_VIDEO_WIDTH = 720
+        private const val DEFAULT_VIDEO_HEIGHT = 1280
     }
 
     private val surfaceView: SurfaceView
@@ -48,8 +52,10 @@ class BanubaPlatformCameraView internal constructor(
         when (methodCall.method) {
             "applyEffect" -> handleApplyEffect(methodCall, result)
             "setFrontFacing" -> handleFacing(methodCall, result)
-            "open" -> handleOpenCamera(methodCall, result)
-            "close" -> handleCloseCamera(methodCall, result)
+            "open" -> handleOpenCamera(result)
+            "close" -> handleCloseCamera(result)
+            "startVideoRecording" -> handleStartVideoRecording(methodCall, result)
+            "stopVideoRecording" -> handleStopVideoRecording(result)
             else -> result.notImplemented()
         }
     }
@@ -67,19 +73,13 @@ class BanubaPlatformCameraView internal constructor(
         result.success(null)
     }
 
-    private fun handleOpenCamera(
-        methodCall: MethodCall,
-        result: MethodChannel.Result
-    ) {
+    private fun handleOpenCamera(result: MethodChannel.Result) {
         banubaSdkManager.effectPlayer.playbackPlay()
         banubaSdkManager.openCamera()
         result.success(null)
     }
 
-    private fun handleCloseCamera(
-        methodCall: MethodCall,
-        result: MethodChannel.Result
-    ) {
+    private fun handleCloseCamera(result: MethodChannel.Result) {
         banubaSdkManager.effectPlayer.playbackPause()
         banubaSdkManager.closeCamera()
 
@@ -97,6 +97,28 @@ class BanubaPlatformCameraView internal constructor(
             banubaSdkManager.cameraFacing = Facing.BACK
         }
 
+        result.success(null)
+    }
+
+    private fun handleStartVideoRecording(
+        methodCall: MethodCall,
+        result: MethodChannel.Result
+    ) {
+        val map = methodCall.arguments as Map<*, *>
+        val filePath = map["filePath"] as String
+        val recordAudio = map["recordAudio"] as Boolean
+
+        banubaSdkManager.startVideoRecording(
+            filePath,
+            recordAudio,
+            ContentRatioParams(DEFAULT_VIDEO_WIDTH, DEFAULT_VIDEO_HEIGHT, false),
+            1f // speed
+        )
+        result.success(null)
+    }
+
+    private fun handleStopVideoRecording(result: MethodChannel.Result) {
+        banubaSdkManager.stopVideoRecording()
         result.success(null)
     }
 

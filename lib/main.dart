@@ -35,7 +35,7 @@ class CameraPage extends StatefulWidget {
   State<CameraPage> createState() => _CameraPageState();
 }
 
-class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
+class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver, VideoRecording {
   BanubaSdkController? _controller;
 
   Future<void> applyEffect(SampleStateModel model) async {
@@ -47,9 +47,40 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   }
 
   @override
+  void startVideoRecording(String filePath) {
+    const recordAudio = true;
+    _controller?.startVideoRecording(filePath, recordAudio);
+  }
+
+  @override
+  void stopVideoRecording() {
+    _controller?.stopVideoRecording();
+  }
+
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _controller?.openCamera();
+    } else if (state == AppLifecycleState.paused) {
+      _controller?.closeCamera();
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  void _handleCameraViewCreated(BanubaSdkController controller) {
+    _controller = controller;
+    _controller?.openCamera();
   }
 
   @override
@@ -67,7 +98,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   return _buildInitialState(model);
 
                 case Status.requestPermissions:
-                  return _buildRequestPermissionsState();
+                  return _buildWarnMessageState('Please grant all required permissions to continue.');
+
+                case Status.grantPermissionsAppSettings:
+                  return _buildWarnMessageState('Some permissions are denied.\nPlease grant permissions in App Settings.');
 
                 case Status.choiceList:
                   return _buildChoiceListState(model);
@@ -81,21 +115,6 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             }),
           ),
         ));
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _controller?.openCamera();
-    } else if (state == AppLifecycleState.paused) {
-      _controller?.closeCamera();
-    }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    WidgetsBinding.instance.removeObserver(this);
   }
 
   Widget _buildInitialState(SampleStateModel model) => Center(
@@ -115,15 +134,15 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
         ),
       );
 
-  Widget _buildRequestPermissionsState() {
+  Widget _buildWarnMessageState(String message) {
     return Container(
       alignment: AlignmentDirectional.topCenter,
       padding: const EdgeInsets.all(16.0),
-      child: const Text('Please provide all required permissions to continue.',
-          style: TextStyle(
+      child: Text(message,
+          style: const TextStyle(
             color: Colors.red,
             fontWeight: FontWeight.bold,
-            fontSize: 17.0,
+            fontSize: 15.0,
           )),
     );
   }
@@ -177,15 +196,15 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
               key: const Key("BanubaCameraView"),
             )),
         Positioned(
-            top: screenSize.height * 0.6,
-            left: 24,
+            top: screenSize.height * 0.5,
+            left: screenSize.width * 0.05,
             child: Column(
               children: [
                 MaterialButton(
                   color: Colors.blue,
                   textColor: Colors.white,
                   disabledTextColor: Colors.black,
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(12.0),
                   splashColor: Colors.blueAccent,
                   onPressed: () => applyEffect(model),
                   child: const Text(
@@ -199,7 +218,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   color: Colors.blue,
                   textColor: Colors.white,
                   disabledTextColor: Colors.black,
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(12.0),
                   splashColor: Colors.blueAccent,
                   onPressed: () => applyFacing(model),
                   child: const Text(
@@ -210,7 +229,11 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   ),
                 )
               ],
-            ))
+            )),
+        Positioned(
+            top: screenSize.height * 0.8,
+            left: screenSize.width * 0.35,
+            child: VideoRecordingButton(model, this))
       ],
     );
   }
@@ -233,7 +256,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                 ))),
         Positioned(
             top: screenSize.height * 0.6,
-            left: 24,
+            left: screenSize.width * 0.05,
             child: Column(
               children: [
                 MaterialButton(
@@ -269,9 +292,61 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       ],
     );
   }
+}
 
-  void _handleCameraViewCreated(BanubaSdkController controller) {
-    _controller = controller;
-    _controller?.openCamera();
+class VideoRecordingButton extends StatefulWidget {
+  final SampleStateModel _model;
+  final VideoRecording _videoRecording;
+
+  const VideoRecordingButton(this._model, this._videoRecording, {super.key});
+  
+  @override
+  _VideoRecordingButtonState createState() => _VideoRecordingButtonState(_model, _videoRecording);
+}
+
+class _VideoRecordingButtonState extends State<VideoRecordingButton> {
+  final SampleStateModel _model;
+  final VideoRecording _videoRecording;
+  
+  bool isRecording = false;
+
+  _VideoRecordingButtonState(this._model, this._videoRecording);
+
+  @override
+  Widget build(BuildContext context) {
+    final text = isRecording ? "Stop Recording" : "Start Recording";
+    final activeColor = isRecording ? Colors.red : Colors.green;
+
+    return MaterialButton(
+      color: activeColor,
+      textColor: Colors.white,
+      disabledTextColor: Colors.black,
+      padding: const EdgeInsets.all(12.0),
+      splashColor: Colors.blueAccent,
+      onPressed: () {
+        setState(() {
+          isRecording = !isRecording;
+
+          if (isRecording) {
+            _model.generateVideoFilePath()
+                .then((filePath) => _videoRecording.startVideoRecording(filePath));
+          } else {
+            _videoRecording.stopVideoRecording();
+          }
+        });
+      },
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 14.0,
+        ),
+      ),
+    );
   }
+}
+
+mixin VideoRecording {
+  void startVideoRecording(String filePath);
+
+  void stopVideoRecording();
 }
