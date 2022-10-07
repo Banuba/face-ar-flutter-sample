@@ -81,7 +81,7 @@ class BanubaPlatformCameraView: NSObject, FlutterPlatformView {
         case "open": self.handleOpenCall(methodCall, result: resultHandler)
         case "close": self.handleCloseCall(methodCall, result: resultHandler)
         case "applyEffect": self.handleApplyEffectCall(methodCall, result: resultHandler)
-        case "setFrontFacing": self.handleFronFacingCall(methodCall, result: resultHandler)
+        case "setFrontFacing": self.handleFrontFacingCall(methodCall, result: resultHandler)
         default: resultHandler(FlutterMethodNotImplemented)
         }
       }
@@ -110,7 +110,7 @@ class BanubaPlatformCameraView: NSObject, FlutterPlatformView {
       result(nil)
     }
     
-    private func handleFronFacingCall(_ methodCall: FlutterMethodCall, result: FlutterResult) {
+    private func handleFrontFacingCall(_ methodCall: FlutterMethodCall, result: FlutterResult) {
       guard let isFront = methodCall.arguments as? Bool else {
         result(FlutterMethodNotImplemented)
         return
