@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class SampleStateModel extends ChangeNotifier {
@@ -7,6 +10,9 @@ class SampleStateModel extends ChangeNotifier {
   bool _lastFacingFront = true;
 
   var status = Status.initial;
+
+  // List of required app permissions for applying AR effect on camera and video recording
+  final _requiredPermissions = [Permission.camera, Permission.storage, Permission.microphone];
 
   String? toggleEffect() {
     final String? effectName;
@@ -26,24 +32,27 @@ class SampleStateModel extends ChangeNotifier {
   }
 
   Future<void> requestCameraPermission() async {
-    var permissionStatus = await Permission.camera.status;
+    for (var permission in _requiredPermissions) {
+      var permissionStatus = await permission.status;
+      if (!permissionStatus.isGranted) {
+        status = Status.requestPermissions;
+        notifyListeners();
 
-    if (permissionStatus.isGranted) {
-      status = Status.choiceList;
-      notifyListeners();
-      return;
+        permissionStatus = await permission.request();
+
+        if (permissionStatus.isPermanentlyDenied) {
+          status = Status.grantPermissionsAppSettings;
+          notifyListeners();
+          return;
+        }
+
+        if (!permissionStatus.isGranted) {
+          return;
+        }
+      }
     }
 
-    status = Status.requestPermissions;
-    notifyListeners();
-
-    permissionStatus = await Permission.camera.request();
-    if (permissionStatus.isGranted) {
-      status = Status.choiceList;
-    } else {
-      status = Status.initial;
-    }
-
+    status = Status.choiceList;
     notifyListeners();
   }
 
@@ -56,11 +65,20 @@ class SampleStateModel extends ChangeNotifier {
     status = Status.choiceCustom;
     notifyListeners();
   }
+
+  // Provide correct file path for new video recording
+  Future<String> generateVideoFilePath() async {
+    final directory = await getTemporaryDirectory();
+    final filename = 'far_flutter_recorded_video_${DateTime.now().millisecondsSinceEpoch}.m4';
+    final filePath = '${directory.path}${Platform.pathSeparator}$filename';
+    return filePath;
+  }
 }
 
 enum Status {
   initial,
   requestPermissions,
+  grantPermissionsAppSettings,
   choiceList,
   choiceFullscreen,
   choiceCustom
