@@ -1,3 +1,6 @@
+# THIS REPO IS DEPRECATED
+This repo is replaced with the official Flutter [plugin](https://pub.dev/packages/banuba_sdk). 
+
 ## Banuba Face AR SDK - Flutter integration sample
 
 [Banuba Face AR SDK](https://www.banuba.com/facear-sdk/face-filters) allows you to build amazing augmented reality apps with 3D filters, animation, and beauty effects.
